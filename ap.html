@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AERO PHONETIC // 航空特殊無線技士 欧文通話表マスター</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter, JetBrains Mono, Noto Sans JP -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Aviation & UI Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tone.js for Subtle Cockpit Sound Effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Inter"', '"Noto Sans JP"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        cockpit: {
+                            950: '#040914',
+                            900: '#081226',
+                            800: '#0f1e3d',
+                            700: '#172d59',
+                            border: '#1e3a6e',
+                        },
+                        radar: {
+                            DEFAULT: '#10b981',
+                            glow: '#34d399',
+                            dim: 'rgba(16, 185, 129, 0.15)',
+                        },
+                        amber: {
+                            DEFAULT: '#f59e0b',
+                            glow: '#fbbf24',
+                            dim: 'rgba(245, 158, 11, 0.15)',
+                        },
+                        hud: {
+                            cyan: '#38bdf8',
+                            red: '#ef4444',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Aviation HUD & Radar Styles */
+        body {
+            background-color: #040914;
+            color: #e2e8f0;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 55%),
+                linear-gradient(rgba(30, 58, 110, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 58, 110, 0.15) 1px, transparent 1px);
+            background-size: 100% 100%, 32px 32px, 32px 32px;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphic Instrument Panel */
+        .instrument-panel {
+            background: rgba(8, 18, 38, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .instrument-card {
+            background: linear-gradient(145deg, rgba(15, 30, 61, 0.9), rgba(8, 18, 38, 0.95));
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .instrument-card:hover {
+            border-color: #10b981;
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* 3D Flashcard Flip Animation */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Radar Sweep Animation for Header Icon */
+        @keyframes radar-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .radar-sweep {
+            animation: radar-spin 4s linear infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #040914;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #172d59;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+
+        /* Subtle HUD Scanline */
+        .hud-glow-text {
+            text-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+        }
+        .amber-glow-text {
+            text-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-radar selection:text-cockpit-950">
+
+    <!-- Top Cockpit Status Bar / Header -->
+    <header class="sticky top-0 z-40 instrument-panel border-b border-cockpit-border">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand / Radar Logo -->
+            <div class="flex items-center gap-3">
+                <div class="relative w-10 h-10 rounded-full bg-cockpit-900 border border-radar/50 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                    <div class="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_70%,rgba(16,185,129,0.4)_100%)] radar-sweep"></div>
+                    <i class="fa-solid fa-plane-up text-radar text-lg relative z-10"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-mono font-extrabold text-lg sm:text-xl tracking-wider text-white">
+                            AERO<span class="text-radar">PHONETIC</span>
+                        </h1>
+                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber/20 text-amber border border-amber/40 font-bold">
+                            航空特対策
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-mono">ICAO PHONETIC ALPHABET &amp; RADIO TRAINER</p>
+                </div>
+            </div>
+
+            <!-- Pilot Rank & XP Gauge -->
+            <div class="flex items-center gap-3 sm:gap-5 bg-cockpit-950/80 px-3.5 py-2 rounded-xl border border-cockpit-border">
+                <div class="text-right">
+                    <div class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">CURRENT RANK</div>
+                    <div id="rank-title" class="text-xs sm:text-sm font-bold text-amber amber-glow-text flex items-center justify-end gap-1.5">
+                        <i class="fa-solid fa-medal"></i> <span>訓練生 (Cadet)</span>
+                    </div>
+                </div>
+                <div class="w-24 sm:w-32">
+                    <div class="flex justify-between text-[10px] font-mono mb-1">
+                        <span class="text-radar" id="mastery-percent">習得 0%</span>
+                        <span class="text-slate-400" id="xp-display">0 XP</span>
+                    </div>
+                    <div class="w-full h-2 bg-cockpit-800 rounded-full overflow-hidden border border-cockpit-border">
+                        <div id="rank-progress-bar" class="h-full bg-gradient-to-r from-radar to-hud-cyan transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <!-- Sound FX Toggle -->
+                <button id="sfx-toggle" onclick="toggleSfx()" title="コックピット効果音 ON/OFF" class="p-2 rounded-lg bg-cockpit-800 hover:bg-cockpit-700 text-radar border border-cockpit-border transition">
+                    <i id="sfx-icon" class="fa-solid fa-volume-high text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="max-w-6xl mx-auto px-2 sm:px-4 pb-2 flex overflow-x-auto gap-1.5 sm:gap-2 no-scrollbar">
+            <button onclick="switchTab('chart')" id="tab-chart" class="nav-btn active flex-1 min-w-[105px] py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                <i class="fa-solid fa-table-cells"></i>
+                <span>通話表・音声</span>
+            </button>
+            <button onclick="switchTab('flashcard')" id="tab-flashcard" class="nav-btn flex-1 min-w-[105px] py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>暗記カード</span>
+            </button>
+            <button onclick="switchTab('quiz')" id="tab-quiz" class="nav-btn flex-1 min-w-[105px] py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                <i class="fa-solid fa-spell-check"></i>
+                <span>4択・スペル試験</span>
+            </button>
+            <button onclick="switchTab('radio')" id="tab-radio" class="nav-btn flex-1 min-w-[105px] py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                <i class="fa-solid fa-headset"></i>
+                <span>無線交信ドリル</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Toast Notification Banner (Replaces alert) -->
+    <div id="toast-banner" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="instrument-panel px-4 py-3 rounded-xl border border-radar shadow-2xl flex items-center gap-3">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-radar text-lg"></i>
+            <span id="toast-text" class="text-sm font-bold text-white">メッセージ</span>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+
+        <!-- ========================================================= -->
+        <!-- MODE 1: PHONETIC CHART & AUDIO (一覧＆音声学習モード)      -->
+        <!-- ========================================================= -->
+        <section id="view-chart" class="space-y-6">
+            <!-- Exam Alert Banner -->
+            <div class="instrument-panel rounded-2xl p-4 sm:p-5 border-l-4 border-l-amber">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 text-amber font-bold text-sm sm:text-base mb-1">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>航空特殊無線技士 試験頻出の「綴り・発音ひっかけポイント」</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            無線工学・法規の試験では正確な英語スペルが問われます。特に
+                            <span class="font-mono font-bold text-amber underline">Alfa</span>（Alphaではない）、
+                            <span class="font-mono font-bold text-amber underline">Juliett</span>（最後のtが2つ）、
+                            <span class="font-mono font-bold text-amber underline">X-ray</span>（ハイフン必須）、数字の9は
+                            <span class="font-mono font-bold text-amber underline">Niner</span>（発音）に注意！
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 shrink-0">
+                        <button onclick="filterChart('all')" id="filter-all" class="filter-chip active px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer">すべて (36)</button>
+                        <button onclick="filterChart('tricky')" id="filter-tricky" class="filter-chip px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer">
+                            <i class="fa-solid fa-star text-amber mr-1"></i>試験注意のみ
+                        </button>
+                        <button onclick="filterChart('unmastered')" id="filter-unmastered" class="filter-chip px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer">未習得のみ</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alphabet Section Header -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-mono font-bold text-sm sm:text-base text-hud-cyan flex items-center gap-2">
+                        <i class="fa-solid fa-font"></i> ALPHABET (A - Z)
+                        <span class="text-xs text-slate-400 font-sans font-normal">タップで発音再生</span>
+                    </h2>
+                    <button onclick="playAllSequence('alpha')" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-cockpit-800 hover:bg-cockpit-700 text-radar border border-radar/30 transition flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-play"></i> A〜Z 連続再生
+                    </button>
+                </div>
+                <div id="alphabet-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    <!-- Cards populated by JS -->
+                </div>
+            </div>
+
+            <!-- Numbers Section Header -->
+            <div class="pt-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-mono font-bold text-sm sm:text-base text-hud-cyan flex items-center gap-2">
+                        <i class="fa-solid fa-hashtag"></i> NUMBERS (0 - 9)
+                        <span class="text-xs text-slate-400 font-sans font-normal">航空無線特有の数字発音</span>
+                    </h2>
+                    <button onclick="playAllSequence('num')" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-cockpit-800 hover:bg-cockpit-700 text-radar border border-radar/30 transition flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-play"></i> 0〜9 連続再生
+                    </button>
+                </div>
+                <div id="number-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                    <!-- Number cards populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MODE 2: FLASHCARD MODE (フラッシュカード暗記モード)         -->
+        <!-- ========================================================= -->
+        <section id="view-flashcard" class="hidden max-w-xl mx-auto space-y-6">
+            <!-- Controls & Filter -->
+            <div class="instrument-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono text-slate-400">DECK:</span>
+                    <select id="fc-deck-select" onchange="initFlashcards()" class="bg-cockpit-950 text-white text-xs sm:text-sm font-bold px-3 py-2 rounded-xl border border-cockpit-border focus:outline-none focus:border-radar">
+                        <option value="all">すべて (A〜Z, 0〜9)</option>
+                        <option value="weak">まだ不安なカードのみ</option>
+                        <option value="tricky">試験ひっかけ注意のみ</option>
+                        <option value="alpha">アルファベット (A〜Z)</option>
+                        <option value="num">数字 (0〜9)</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="fc-counter" class="font-mono text-sm font-bold text-radar">1 / 36</span>
+                    <button onclick="shuffleFlashcards()" class="p-2 rounded-xl bg-cockpit-800 hover:bg-cockpit-700 text-slate-300 border border-cockpit-border transition" title="シャッフル">
+                        <i class="fa-solid fa-shuffle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3D Flip Card -->
+            <div class="perspective-1000 w-full h-80 sm:h-96 cursor-pointer select-none" onclick="flipFlashcard()">
+                <div id="fc-inner" class="relative w-full h-full transform-style-3d">
+                    <!-- Front of Card -->
+                    <div class="absolute inset-0 backface-hidden instrument-panel rounded-3xl p-6 flex flex-col items-center justify-between border-2 border-cockpit-border hover:border-radar/60 transition">
+                        <div class="w-full flex justify-between items-center text-xs font-mono text-slate-400">
+                            <span id="fc-front-badge" class="px-2.5 py-1 rounded-full bg-cockpit-800 text-hud-cyan">ALPHABET</span>
+                            <span id="fc-mastered-status" class="text-slate-500"><i class="fa-regular fa-circle"></i> 未習得</span>
+                        </div>
+                        <div class="text-center">
+                            <div id="fc-char" class="font-mono text-8xl sm:text-9xl font-extrabold text-white tracking-tight hud-glow-text">
+                                A
+                            </div>
+                            <p class="text-xs text-slate-400 mt-4 font-mono">TAP CARD TO REVEAL CODE</p>
+                        </div>
+                        <div class="text-xs text-radar font-bold flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate"></i> タップして答えを表示
+                        </div>
+                    </div>
+
+                    <!-- Back of Card -->
+                    <div class="absolute inset-0 backface-hidden rotate-y-180 instrument-panel rounded-3xl p-6 flex flex-col items-center justify-between border-2 border-radar bg-cockpit-900">
+                        <div class="w-full flex justify-between items-center">
+                            <span id="fc-morse" class="font-mono text-sm text-amber font-bold tracking-widest">・－</span>
+                            <button onclick="event.stopPropagation(); speakCurrentFlashcard();" class="px-3.5 py-2 rounded-xl bg-radar/20 hover:bg-radar/30 text-radar border border-radar/40 text-xs font-bold flex items-center gap-1.5 transition">
+                                <i class="fa-solid fa-volume-high"></i> 発音を聞く
+                            </button>
+                        </div>
+                        <div class="text-center space-y-2">
+                            <div id="fc-word" class="font-mono text-4xl sm:text-5xl font-extrabold text-radar hud-glow-text">
+                                Alfa
+                            </div>
+                            <div id="fc-kana" class="text-base sm:text-lg font-bold text-slate-200">
+                                アルファ
+                            </div>
+                            <div id="fc-tip" class="mt-3 px-3 py-2 rounded-xl bg-amber/15 border border-amber/40 text-amber text-xs font-medium max-w-sm mx-auto">
+                                試験注意：Alpha ではなく Alfa と綴る！
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-400 font-mono">
+                            下のボタンで習得度を記録
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                <button onclick="rateFlashcard(false)" class="py-4 px-4 rounded-2xl bg-cockpit-800 hover:bg-hud-red/20 border border-hud-red/40 text-hud-red font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>まだ不安（後でもう一度）</span>
+                </button>
+                <button onclick="rateFlashcard(true)" class="py-4 px-4 rounded-2xl bg-radar/20 hover:bg-radar/30 border border-radar text-radar font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>覚えた！（習得済みにする）</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MODE 3: 4-CHOICE & SPELLING QUIZ (4択＆スペル入力試験)     -->
+        <!-- ========================================================= -->
+        <section id="view-quiz" class="hidden max-w-2xl mx-auto space-y-6">
+            <!-- Sub-mode Selector -->
+            <div class="instrument-panel p-2 rounded-2xl grid grid-cols-2 gap-2">
+                <button onclick="setQuizMode('choice')" id="qmode-choice" class="py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer bg-radar text-cockpit-950">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>スピード4択クイズ</span>
+                </button>
+                <button onclick="setQuizMode('spelling')" id="qmode-spelling" class="py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer text-slate-300 hover:bg-cockpit-800">
+                    <i class="fa-solid fa-keyboard"></i>
+                    <span>試験本番スペル入力</span>
+                </button>
+            </div>
+
+            <!-- Quiz Status HUD -->
+            <div class="instrument-panel p-4 rounded-2xl flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div>
+                        <div class="text-[10px] font-mono text-slate-400">STREAK / COMBO</div>
+                        <div class="font-mono text-xl font-extrabold text-amber flex items-center gap-1.5">
+                            <i class="fa-solid fa-fire"></i> <span id="quiz-combo">0</span>
+                        </div>
+                    </div>
+                    <div class="h-8 w-px bg-cockpit-border"></div>
+                    <div>
+                        <div class="text-[10px] font-mono text-slate-400">SESSION SCORE</div>
+                        <div class="font-mono text-xl font-extrabold text-radar" id="quiz-score">0</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer bg-cockpit-950 px-3 py-2 rounded-xl border border-cockpit-border">
+                        <input type="checkbox" id="quiz-tricky-only" onchange="nextQuizQuestion()" class="accent-amber w-4 h-4">
+                        <span>頻出ひっかけ優先</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="instrument-panel p-6 sm:p-8 rounded-3xl text-center space-y-6 relative overflow-hidden">
+                <div class="flex justify-between items-center text-xs font-mono text-slate-400">
+                    <span id="quiz-prompt-label">IDENTIFY PHONETIC CODE</span>
+                    <button onclick="speakQuizTarget()" class="px-3 py-1.5 rounded-lg bg-cockpit-800 hover:bg-cockpit-700 text-hud-cyan border border-hud-cyan/30 flex items-center gap-1.5 transition cursor-pointer">
+                        <i class="fa-solid fa-volume-high"></i> ヒント音声
+                    </button>
+                </div>
+
+                <div>
+                    <div id="quiz-target-char" class="font-mono text-7xl sm:text-8xl font-extrabold text-white hud-glow-text my-2">
+                        J
+                    </div>
+                    <p id="quiz-sub-hint" class="text-xs sm:text-sm text-slate-400">
+                        この文字に対応するICAOフォネティックコードを選択してください
+                    </p>
+                </div>
+
+                <!-- 4-Choice Options Container -->
+                <div id="quiz-choices-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <!-- Buttons injected via JS -->
+                </div>
+
+                <!-- Spelling Input Container -->
+                <form id="quiz-spelling-form" onsubmit="submitSpellingQuiz(event)" class="hidden space-y-4 max-w-md mx-auto pt-2">
+                    <div class="relative">
+                        <input type="text" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            placeholder="例: Alfa, Juliett, X-ray..."
+                            class="w-full bg-cockpit-950 border-2 border-cockpit-border focus:border-radar rounded-2xl px-5 py-4 text-center font-mono text-2xl font-bold text-white placeholder-slate-600 focus:outline-none transition">
+                    </div>
+                    <button type="submit" class="w-full py-3.5 px-6 rounded-2xl bg-radar hover:bg-radar-glow text-cockpit-950 font-extrabold text-base shadow-[0_0_20px_rgba(16,185,129,0.3)] transition cursor-pointer">
+                        回答を送信 (ENTER)
+                    </button>
+                </form>
+
+                <!-- Feedback & Explanation Box -->
+                <div id="quiz-feedback" class="hidden rounded-2xl p-4 text-left border transition-all">
+                    <div class="flex items-start gap-3">
+                        <i id="quiz-fb-icon" class="fa-solid fa-circle-check text-2xl mt-0.5"></i>
+                        <div class="flex-1">
+                            <div id="quiz-fb-title" class="font-bold text-base">正解！</div>
+                            <div id="quiz-fb-detail" class="text-xs sm:text-sm mt-1 leading-relaxed"></div>
+                        </div>
+                        <button onclick="nextQuizQuestion()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs shrink-0 transition cursor-pointer">
+                            次へ <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MODE 4: RADIO CALLSIGN SIMULATOR (実戦！無線交信ドリル)    -->
+        <!-- ========================================================= -->
+        <section id="view-radio" class="hidden max-w-3xl mx-auto space-y-6">
+            <!-- Mode Selector -->
+            <div class="instrument-panel p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="font-bold text-base sm:text-lg text-white flex items-center gap-2">
+                        <i class="fa-solid fa-tower-broadcast text-radar"></i>
+                        <span>航空無線コールサイン交信ドリル</span>
+                    </h2>
+                    <p class="text-xs text-slate-400">日本の機体記号（JA〜）や便名を使った実戦トレーニング</p>
+                </div>
+                <div class="flex gap-1.5 bg-cockpit-950 p-1.5 rounded-xl border border-cockpit-border">
+                    <button onclick="setRadioMode('decode')" id="rmode-decode" class="px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer bg-radar text-cockpit-950">
+                        解読・聞き取り
+                    </button>
+                    <button onclick="setRadioMode('encode')" id="rmode-encode" class="px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer text-slate-300 hover:bg-cockpit-800">
+                        送信（変換）
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulator Console -->
+            <div class="instrument-panel p-6 sm:p-8 rounded-3xl space-y-6 border-t-4 border-t-hud-cyan">
+                <!-- ATC Transmission Header -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-cockpit-border">
+                    <div class="flex items-center gap-2 font-mono text-xs text-hud-cyan">
+                        <span class="w-2.5 h-2.5 rounded-full bg-radar animate-pulse"></span>
+                        <span>FREQ: 118.100 MHz (TOKYO TOWER)</span>
+                    </div>
+                    <button onclick="generateRadioMission()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-cockpit-800 hover:bg-cockpit-700 text-slate-300 border border-cockpit-border transition cursor-pointer">
+                        <i class="fa-solid fa-arrows-rotate mr-1"></i> 新しいコールサイン
+                    </button>
+                </div>
+
+                <!-- DECODE MODE (Listen/Read Phonetic -> Type Callsign) -->
+                <div id="radio-decode-panel" class="space-y-6">
+                    <div class="bg-cockpit-950/90 p-5 rounded-2xl border border-cockpit-border space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-mono text-amber font-bold">INCOMING TRANSMISSION (受信電文)</span>
+                            <div class="flex gap-2">
+                                <button onclick="playRadioTransmission(0.85)" class="px-3.5 py-2 rounded-xl bg-radar text-cockpit-950 font-bold text-xs flex items-center gap-1.5 hover:bg-radar-glow transition cursor-pointer">
+                                    <i class="fa-solid fa-volume-high"></i> 音声再生
+                                </button>
+                                <button onclick="playRadioTransmission(0.6)" class="px-3 py-2 rounded-xl bg-cockpit-800 text-slate-200 font-bold text-xs flex items-center gap-1.5 hover:bg-cockpit-700 border border-cockpit-border transition cursor-pointer" title="ゆっくり再生">
+                                    <i class="fa-solid fa-gauge-simple"></i> ゆっくり
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Phonetic Text Display (Toggleable for Dictation) -->
+                        <div id="radio-phonetic-display" class="font-mono text-base sm:text-xl font-bold text-radar leading-relaxed tracking-wide py-2">
+                            "Juliett - Alfa - Eight - One - Two - Alfa"
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="toggleDictationBlind()" id="blind-toggle-btn" class="text-xs text-slate-400 hover:text-amber flex items-center gap-1.5 transition cursor-pointer">
+                                <i class="fa-solid fa-eye-slash"></i> <span>文字を隠して聞き取り練習（ディクテーション）</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form onsubmit="checkRadioDecode(event)" class="space-y-4">
+                        <label class="block text-xs sm:text-sm font-bold text-slate-300">
+                            受信したコールサインを半角英数字で入力してください（例: JA812A）
+                        </label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="radio-decode-input" autocomplete="off" placeholder="例: JA812A"
+                                class="flex-1 bg-cockpit-950 border-2 border-cockpit-border focus:border-hud-cyan rounded-2xl px-5 py-3.5 font-mono text-2xl font-extrabold uppercase text-white tracking-widest placeholder-slate-600 focus:outline-none">
+                            <button type="submit" class="px-6 py-3.5 rounded-2xl bg-hud-cyan hover:bg-sky-300 text-cockpit-950 font-extrabold text-sm sm:text-base transition cursor-pointer shrink-0">
+                                復唱確認 (READBACK)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ENCODE MODE (See Callsign -> Build Phonetic Sequence) -->
+                <div id="radio-encode-panel" class="hidden space-y-6">
+                    <div class="text-center bg-cockpit-950/90 p-5 rounded-2xl border border-cockpit-border">
+                        <div class="text-xs font-mono text-slate-400 mb-1">YOUR AIRCRAFT CALLSIGN (自機コールサイン)</div>
+                        <div id="radio-encode-target" class="font-mono text-4xl sm:text-5xl font-extrabold text-amber tracking-widest amber-glow-text">
+                            JA73NX
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2">下の単語ボタンを順番にタップして無線送信文を組み立てよう！</p>
+                    </div>
+
+                    <!-- User Selected Sequence Slot -->
+                    <div class="bg-cockpit-950 p-4 rounded-2xl border-2 border-dashed border-cockpit-border min-h-[72px] flex flex-wrap items-center gap-2" id="encode-slots">
+                        <span class="text-xs text-slate-500 font-mono">ここに選択したフォネティックコードが入ります...</span>
+                    </div>
+
+                    <!-- Word Pool Buttons -->
+                    <div id="encode-word-pool" class="flex flex-wrap justify-center gap-2">
+                        <!-- Shuffled candidate buttons injected by JS -->
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2">
+                        <button onclick="clearEncodeSlots()" class="px-4 py-2.5 rounded-xl bg-cockpit-800 hover:bg-cockpit-700 text-slate-300 text-xs font-bold border border-cockpit-border transition cursor-pointer">
+                            <i class="fa-solid fa-delete-left mr-1"></i> クリア
+                        </button>
+                        <button onclick="checkRadioEncode()" class="px-6 py-3 rounded-xl bg-radar hover:bg-radar-glow text-cockpit-950 font-extrabold text-sm transition cursor-pointer">
+                            <i class="fa-solid fa-microphone-lines mr-1.5"></i> 送信する (TRANSMIT)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Radio Result Feedback -->
+                <div id="radio-feedback" class="hidden rounded-2xl p-4 border"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-cockpit-border/60 py-4 px-4 text-center text-xs text-slate-500 font-mono">
+        ICAO ANNEX 10 PHONETIC ALPHABET // 航空特殊無線技士 試験合格応援シミュレーター
+    </footer>
+
+    <!-- ========================================================= -->
+    <!-- JAVASCRIPT APPLICATION LOGIC                              -->
+    <!-- ========================================================= -->
+    <script>
+        // 1. ICAO PHONETIC DATASET (A-Z, 0-9 + Exam Tips & Morse)
+        const PHONETIC_DATA = [
+            { char: 'A', word: 'Alfa', kana: 'アルファ', type: 'alpha', morse: '・－', tricky: true, tip: '【超頻出】「Alpha」ではなく「Alfa」と綴る！f を使うのがICAOの正式表記。' },
+            { char: 'B', word: 'Bravo', kana: 'ブラボー', type: 'alpha', morse: '－・・・', tricky: false, tip: '標準的な綴り。発音は「ブラーヴォ」。' },
+            { char: 'C', word: 'Charlie', kana: 'チャーリー', type: 'alpha', morse: '－・－・', tricky: false, tip: '語尾は「-ie」。Charleyではないので注意。' },
+            { char: 'D', word: 'Delta', kana: 'デルタ', type: 'alpha', morse: '－・・', tricky: false, tip: 'ギリシャ文字と同じ綴り。' },
+            { char: 'E', word: 'Echo', kana: 'エコー', type: 'alpha', morse: '・', tricky: false, tip: 'やまびこ（Echo）と同じ綴り。' },
+            { char: 'F', word: 'Foxtrot', kana: 'フォックストロット', type: 'alpha', morse: '・・－・', tricky: false, tip: 'Fox + trot で1語（ハイフンなし）。' },
+            { char: 'G', word: 'Golf', kana: 'ゴルフ', type: 'alpha', morse: '－－・', tricky: false, tip: 'スポーツのゴルフと同じ綴り。' },
+            { char: 'H', word: 'Hotel', kana: 'ホテル', type: 'alpha', morse: '・・・・', tricky: false, tip: '発音は「ホーテル」（テにアクセント）。' },
+            { char: 'I', word: 'India', kana: 'インディア', type: 'alpha', morse: '・・', tricky: false, tip: '国名のインドと同じ綴り。' },
+            { char: 'J', word: 'Juliett', kana: 'ジュリエット', type: 'alpha', morse: '・－－－', tricky: true, tip: '【超頻出】最後の「t」が2つ（Juliett）！フランス語読みでもtを発音させるため。' },
+            { char: 'K', word: 'Kilo', kana: 'キロ', type: 'alpha', morse: '－・－', tricky: false, tip: '重さのキロと同じ綴り。' },
+            { char: 'L', word: 'Lima', kana: 'リマ', type: 'alpha', morse: '・－・・', tricky: false, tip: 'ペルーの首都リマ。発音は「リーマ」。' },
+            { char: 'M', word: 'Mike', kana: 'マイク', type: 'alpha', morse: '－－', tricky: false, tip: '人名のマイクと同じ綴り。' },
+            { char: 'N', word: 'November', kana: 'ノベンバー', type: 'alpha', morse: '－・', tricky: false, tip: '11月の英語と同じ綴り。' },
+            { char: 'O', word: 'Oscar', kana: 'オスカー', type: 'alpha', morse: '－－－', tricky: false, tip: '語尾は「-ar」（Oskarではない）。' },
+            { char: 'P', word: 'Papa', kana: 'パパ', type: 'alpha', morse: '・－－・', tricky: false, tip: '発音は「パパー」（後ろにアクセント）。' },
+            { char: 'Q', word: 'Quebec', kana: 'ケベック', type: 'alpha', morse: '－－・－', tricky: false, tip: 'カナダの都市ケベック。発音は「ケベック」。' },
+            { char: 'R', word: 'Romeo', kana: 'ロメオ', type: 'alpha', morse: '・－・', tricky: false, tip: 'ロミオとジュリエットのロメオ。' },
+            { char: 'S', word: 'Sierra', kana: 'シエラ', type: 'alpha', morse: '・・・', tricky: true, tip: '【スペル注意】「r」が2つ重なる（Sierra）。' },
+            { char: 'T', word: 'Tango', kana: 'タンゴ', type: 'alpha', morse: '－', tricky: false, tip: 'ダンスのタンゴと同じ綴り。' },
+            { char: 'U', word: 'Uniform', kana: 'ユニフォーム', type: 'alpha', morse: '・・－', tricky: false, tip: '制服のユニフォームと同じ綴り。' },
+            { char: 'V', word: 'Victor', kana: 'ビクター', type: 'alpha', morse: '・・・－', tricky: false, tip: '語尾は「-or」（Victerではない）。' },
+            { char: 'W', word: 'Whiskey', kana: 'ウイスキー', type: 'alpha', morse: '・－－', tricky: true, tip: '【スペル注意】「Whisky」ではなく「e」が入る「Whiskey」！' },
+            { char: 'X', word: 'X-ray', kana: 'エックスレイ', type: 'alpha', morse: '－・・－', tricky: true, tip: '【超頻出】「X」と「ray」の間にハイフン（-）が必要！' },
+            { char: 'Y', word: 'Yankee', kana: 'ヤンキー', type: 'alpha', morse: '－・－－', tricky: true, tip: '【スペル注意】語尾は「e」が2つ（Yankee）。' },
+            { char: 'Z', word: 'Zulu', kana: 'ズールー', type: 'alpha', morse: '－－・・', tricky: false, tip: '語尾は「u」（Zulooではない）。' },
+            // Numbers 0-9
+            { char: '0', word: 'Zero', kana: 'ゼロ', type: 'num', morse: '－－－－－', tricky: false, tip: '英語のゼロ。発音は「ズィーロ」。' },
+            { char: '1', word: 'One', kana: 'ワン', type: 'num', morse: '・－－－－', tricky: false, tip: '数字の1。' },
+            { char: '2', word: 'Two', kana: 'ツー', type: 'num', morse: '・・－－－', tricky: false, tip: '数字の2。' },
+            { char: '3', word: 'Three', kana: 'スリー', type: 'num', morse: '・・・－－', tricky: true, tip: '【発音注意】無線では「ツリー（Tree）」のように明瞭に発音する。' },
+            { char: '4', word: 'Four', kana: 'フォー', type: 'num', morse: '・・・・－', tricky: true, tip: '【発音注意】無線では「フォワー（Fower）」のように2音節で発音。' },
+            { char: '5', word: 'Five', kana: 'ファイブ', type: 'num', morse: '・・・・・', tricky: true, tip: '【発音注意】無線では「ファイフ（Fife）」のように明瞭に発音。' },
+            { char: '6', word: 'Six', kana: 'シックス', type: 'num', morse: '－・・・・', tricky: false, tip: '数字の6。' },
+            { char: '7', word: 'Seven', kana: 'セブン', type: 'num', morse: '－－・・・', tricky: false, tip: '数字の7。' },
+            { char: '8', word: 'Eight', kana: 'エイト', type: 'num', morse: '－－－・・', tricky: false, tip: '数字の8。' },
+            { char: '9', word: 'Niner', kana: 'ナイナー', type: 'num', morse: '－－－－・', tricky: true, tip: '【超頻出】Fiveやドイツ語のNein(ノー)との聞き間違いを防ぐため「Niner（ナイナー）」と発音・表記！' },
+        ];
+
+        // 2. APPLICATION STATE & STORAGE
+        const STORAGE_KEY = 'aero_phonetic_state_v1';
+        let appState = {
+            mastered: [], // Array of 'char' strings e.g. ['A', 'B']
+            xp: 0,
+            sfxEnabled: true
+        };
+
+        // Load saved progress safely
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    appState = { ...appState, ...parsed };
+                }
+            } catch (e) {
+                console.warn('LocalStorage unavailable:', e);
+            }
+            updateRankUI();
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.warn('LocalStorage save failed:', e);
+            }
+            updateRankUI();
+        }
+
+        function addXP(amount) {
+            appState.xp += amount;
+            saveState();
+        }
+
+        function toggleMastered(char) {
+            const idx = appState.mastered.indexOf(char);
+            if (idx === -1) {
+                appState.mastered.push(char);
+                addXP(15);
+                showToast(`「${char}」を習得済みに登録しました！ (+15 XP)`, 'success');
+                playSfx('confirm');
+            } else {
+                appState.mastered.splice(idx, 1);
+                showToast(`「${char}」の習得マークを解除しました`, 'info');
+            }
+            saveState();
+            renderChart();
+        }
+
+        // Rank Calculation System
+        function updateRankUI() {
+            const totalItems = PHONETIC_DATA.length; // 36
+            const masteredCount = appState.mastered.length;
+            const pct = Math.round((masteredCount / totalItems) * 100);
+
+            document.getElementById('mastery-percent').textContent = `習得 ${pct}% (${masteredCount}/${totalItems})`;
+            document.getElementById('xp-display').textContent = `${appState.xp} XP`;
+            document.getElementById('rank-progress-bar').style.width = `${pct}%`;
+
+            // Determine Rank by combined XP & Mastery
+            const scoreMetric = appState.xp + (masteredCount * 10);
+            let rankName = '訓練生 (Cadet)';
+            let iconClass = 'fa-seedling';
+
+            if (scoreMetric >= 1200 && pct >= 90) {
+                rankName = '航空管制官 (ATC Master)';
+                iconClass = 'fa-tower-observation';
+            } else if (scoreMetric >= 700 && pct >= 60) {
+                rankName = '機長 (Captain)';
+                iconClass = 'fa-crown';
+            } else if (scoreMetric >= 300 || pct >= 30) {
+                rankName = '副操縦士 (First Officer)';
+                iconClass = 'fa-plane';
+            }
+
+            const rankEl = document.getElementById('rank-title');
+            rankEl.innerHTML = `<i class="fa-solid ${iconClass}"></i> <span>${rankName}</span>`;
+
+            // Update SFX Icon
+            const sfxIcon = document.getElementById('sfx-icon');
+            sfxIcon.className = appState.sfxEnabled ? 'fa-solid fa-volume-high text-sm' : 'fa-solid fa-volume-xmark text-sm text-slate-500';
+        }
+
+        // 3. AUDIO ENGINE (Web Speech API + Tone.js Cockpit SFX)
+        let synth = null;
+        function playSfx(type) {
+            if (!appState.sfxEnabled) return;
+            try {
+                if (!synth && typeof Tone !== 'undefined') {
+                    synth = new Tone.Synth({
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.005, decay: 0.08, sustain: 0, release: 0.08 }
+                    }).toDestination();
+                    synth.volume.value = -12;
+                }
+                if (synth) {
+                    if (Tone.context.state !== 'running') Tone.start();
+                    if (type === 'click') synth.triggerAttackRelease('C6', '32n');
+                    if (type === 'confirm') {
+                        synth.triggerAttackRelease('E5', '16n');
+                        setTimeout(() => synth.triggerAttackRelease('A5', '16n'), 70);
+                    }
+                    if (type === 'error') {
+                        synth.triggerAttackRelease('A3', '16n');
+                        setTimeout(() => synth.triggerAttackRelease('F3', '16n'), 90);
+                    }
+                }
+            } catch (e) { /* Ignore audio context restrictions */ }
+        }
+
+        function toggleSfx() {
+            appState.sfxEnabled = !appState.sfxEnabled;
+            saveState();
+            if (appState.sfxEnabled) playSfx('confirm');
+        }
+
+        // Web Speech API Pronunciation Helper
+        function speakWord(word, rate = 0.9) {
+            if (!('speechSynthesis' in window)) {
+                showToast('お使いのブラウザは音声読み上げに対応していません', 'error');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            // Adjust pronunciation string slightly so TTS reads aviation phonetics naturally
+            let speakText = word;
+            if (word === 'Alfa') speakText = 'Alpha';
+            if (word === 'Juliett') speakText = 'Juliet';
+            if (word === 'Niner') speakText = 'Niner';
+
+            const utter = new SpeechSynthesisUtterance(speakText);
+            utter.lang = 'en-US';
+            utter.rate = rate;
+            utter.pitch = 1.0;
+            window.speechSynthesis.speak(utter);
+        }
+
+        let sequenceTimer = null;
+        function playAllSequence(type) {
+            if (sequenceTimer) {
+                clearInterval(sequenceTimer);
+                sequenceTimer = null;
+                window.speechSynthesis.cancel();
+                showToast('連続再生を停止しました', 'info');
+                return;
+            }
+            const items = PHONETIC_DATA.filter(d => d.type === type);
+            let idx = 0;
+            showToast(`${type === 'alpha' ? 'A〜Z' : '0〜9'} の連続再生を開始します（再クリックで停止）`, 'info');
+            
+            const speakNext = () => {
+                if (idx >= items.length) {
+                    clearInterval(sequenceTimer);
+                    sequenceTimer = null;
+                    return;
+                }
+                speakWord(items[idx].word, 0.95);
+                idx++;
+            };
+            speakNext();
+            sequenceTimer = setInterval(speakNext, 1300);
+        }
+
+        // Toast Notification
+        let toastTimeout = null;
+        function showToast(msg, type = 'success') {
+            const banner = document.getElementById('toast-banner');
+            const textEl = document.getElementById('toast-text');
+            const iconEl = document.getElementById('toast-icon');
+
+            textEl.textContent = msg;
+            if (type === 'error') {
+                iconEl.className = 'fa-solid fa-circle-xmark text-hud-red text-lg';
+            } else if (type === 'info') {
+                iconEl.className = 'fa-solid fa-circle-info text-hud-cyan text-lg';
+            } else {
+                iconEl.className = 'fa-solid fa-circle-check text-radar text-lg';
+            }
+
+            banner.classList.remove('translate-y-24', 'opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                banner.classList.add('translate-y-24', 'opacity-0');
+            }, 2600);
+        }
+
+        // 4. NAVIGATION TABS
+        function switchTab(tabName) {
+            playSfx('click');
+            const tabs = ['chart', 'flashcard', 'quiz', 'radio'];
+            tabs.forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabName) {
+                    view.classList.remove('hidden');
+                    btn.classList.add('bg-radar', 'text-cockpit-950', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]');
+                    btn.classList.remove('text-slate-300', 'hover:bg-cockpit-800');
+                } else {
+                    view.classList.add('hidden');
+                    btn.classList.remove('bg-radar', 'text-cockpit-950', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]');
+                    btn.classList.add('text-slate-300', 'hover:bg-cockpit-800');
+                }
+            });
+
+            if (tabName === 'flashcard') initFlashcards();
+            if (tabName === 'quiz') nextQuizQuestion();
+            if (tabName === 'radio' && !currentRadioCallsign) generateRadioMission();
+        }
+
+        // 5. MODE 1: PHONETIC CHART RENDERING
+        let currentChartFilter = 'all';
+
+        function filterChart(filterType) {
+            playSfx('click');
+            currentChartFilter = filterType;
+            document.querySelectorAll('.filter-chip').forEach(btn => {
+                btn.classList.remove('bg-radar', 'text-cockpit-950');
+                btn.classList.add('bg-cockpit-800', 'text-slate-300');
+            });
+            const activeBtn = document.getElementById(`filter-${filterType}`);
+            activeBtn.classList.remove('bg-cockpit-800', 'text-slate-300');
+            activeBtn.classList.add('bg-radar', 'text-cockpit-950');
+            renderChart();
+        }
+
+        function renderChart() {
+            const alphaGrid = document.getElementById('alphabet-grid');
+            const numGrid = document.getElementById('number-grid');
+            alphaGrid.innerHTML = '';
+            numGrid.innerHTML = '';
+
+            PHONETIC_DATA.forEach(item => {
+                const isMastered = appState.mastered.includes(item.char);
+                if (currentChartFilter === 'tricky' && !item.tricky) return;
+                if (currentChartFilter === 'unmastered' && isMastered) return;
+
+                const card = document.createElement('div');
+                card.className = `instrument-card rounded-2xl p-3.5 flex flex-col justify-between relative cursor-pointer select-none ${item.tricky ? 'border-amber/40' : ''}`;
+                card.onclick = () => speakWord(item.word);
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <span class="font-mono text-3xl font-extrabold ${item.tricky ? 'text-amber' : 'text-white'}">${item.char}</span>
+                        <div class="flex items-center gap-1.5">
+                            ${item.tricky ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber/20 text-amber border border-amber/40" title="${item.tip}">注意</span>` : ''}
+                            <button onclick="event.stopPropagation(); toggleMastered('${item.char}')" title="習得チェック"
+                                class="w-7 h-7 rounded-lg flex items-center justify-center transition ${isMastered ? 'bg-radar/20 text-radar border border-radar/50' : 'bg-cockpit-950/60 text-slate-500 hover:text-slate-300'}">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="my-2">
+                        <div class="font-mono text-lg font-extrabold text-radar tracking-tight flex items-center gap-1.5">
+                            <span>${item.word}</span>
+                            <i class="fa-solid fa-volume-low text-xs text-slate-400"></i>
+                        </div>
+                        <div class="text-xs text-slate-300 font-medium">${item.kana}</div>
+                    </div>
+                    <div class="pt-2 border-t border-cockpit-border/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                        <span>${item.morse}</span>
+                        ${item.tricky ? `<button onclick="event.stopPropagation(); showToast('${item.tip}', 'info')" class="text-amber hover:underline">解説 <i class="fa-solid fa-circle-question"></i></button>` : '<span>ICAO STD</span>'}
+                    </div>
+                `;
+
+                if (item.type === 'alpha') {
+                    alphaGrid.appendChild(card);
+                } else {
+                    numGrid.appendChild(card);
+                }
+            });
+        }
+
+        // 6. MODE 2: FLASHCARDS LOGIC
+        let fcDeck = [];
+        let fcIndex = 0;
+        let fcFlipped = false;
+
+        function initFlashcards() {
+            const deckType = document.getElementById('fc-deck-select').value;
+            if (deckType === 'weak') {
+                fcDeck = PHONETIC_DATA.filter(d => !appState.mastered.includes(d.char));
+                if (fcDeck.length === 0) {
+                    showToast('おめでとうございます！すべてのカードを習得済みです！', 'success');
+                    fcDeck = [...PHONETIC_DATA];
+                }
+            } else if (deckType === 'tricky') {
+                fcDeck = PHONETIC_DATA.filter(d => d.tricky);
+            } else if (deckType === 'alpha') {
+                fcDeck = PHONETIC_DATA.filter(d => d.type === 'alpha');
+            } else if (deckType === 'num') {
+                fcDeck = PHONETIC_DATA.filter(d => d.type === 'num');
+            } else {
+                fcDeck = [...PHONETIC_DATA];
+            }
+            fcIndex = 0;
+            renderFlashcard();
+        }
+
+        function shuffleFlashcards() {
+            playSfx('click');
+            for (let i = fcDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [fcDeck[i], fcDeck[j]] = [fcDeck[j], fcDeck[i]];
+            }
+            fcIndex = 0;
+            renderFlashcard();
+            showToast('カードをシャッフルしました', 'info');
+        }
+
+        function renderFlashcard() {
+            const inner = document.getElementById('fc-inner');
+            fcFlipped = false;
+            inner.classList.remove('rotate-y-180');
+
+            const item = fcDeck[fcIndex];
+            const isMastered = appState.mastered.includes(item.char);
+
+            document.getElementById('fc-counter').textContent = `${fcIndex + 1} / ${fcDeck.length}`;
+            document.getElementById('fc-front-badge').textContent = item.type === 'alpha' ? 'ALPHABET' : 'NUMBER';
+            document.getElementById('fc-mastered-status').innerHTML = isMastered
+                ? '<span class="text-radar font-bold"><i class="fa-solid fa-circle-check"></i> 習得済み</span>'
+                : '<span class="text-slate-500"><i class="fa-regular fa-circle"></i> 未習得</span>';
+
+            document.getElementById('fc-char').textContent = item.char;
+            document.getElementById('fc-morse').textContent = `MORSE: ${item.morse}`;
+            document.getElementById('fc-word').textContent = item.word;
+            document.getElementById('fc-kana').textContent = item.kana;
+
+            const tipEl = document.getElementById('fc-tip');
+            tipEl.textContent = item.tip;
+            if (item.tricky) {
+                tipEl.className = 'mt-3 px-3 py-2 rounded-xl bg-amber/15 border border-amber/40 text-amber text-xs font-bold max-w-sm mx-auto';
+            } else {
+                tipEl.className = 'mt-3 px-3 py-2 rounded-xl bg-cockpit-800 border border-cockpit-border text-slate-300 text-xs max-w-sm mx-auto';
+            }
+        }
+
+        function flipFlashcard() {
+            playSfx('click');
+            const inner = document.getElementById('fc-inner');
+            fcFlipped = !fcFlipped;
+            if (fcFlipped) {
+                inner.classList.add('rotate-y-180');
+                speakWord(fcDeck[fcIndex].word);
+            } else {
+                inner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function speakCurrentFlashcard() {
+            speakWord(fcDeck[fcIndex].word);
+        }
+
+        function rateFlashcard(known) {
+            const item = fcDeck[fcIndex];
+            if (known) {
+                if (!appState.mastered.includes(item.char)) {
+                    appState.mastered.push(item.char);
+                    addXP(15);
+                } else {
+                    addXP(5);
+                }
+                playSfx('confirm');
+            } else {
+                const idx = appState.mastered.indexOf(item.char);
+                if (idx !== -1) appState.mastered.splice(idx, 1);
+                playSfx('click');
+            }
+            saveState();
+            renderChart();
+
+            fcIndex = (fcIndex + 1) % fcDeck.length;
+            renderFlashcard();
+        }
+
+        // 7. MODE 3: 4-CHOICE & SPELLING QUIZ LOGIC
+        let quizSubMode = 'choice'; // 'choice' | 'spelling'
+        let currentQuizItem = null;
+        let quizCombo = 0;
+        let quizSessionScore = 0;
+        let quizAnswered = false;
+
+        function setQuizMode(mode) {
+            playSfx('click');
+            quizSubMode = mode;
+            const btnChoice = document.getElementById('qmode-choice');
+            const btnSpell = document.getElementById('qmode-spelling');
+
+            if (mode === 'choice') {
+                btnChoice.className = 'py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer bg-radar text-cockpit-950';
+                btnSpell.className = 'py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer text-slate-300 hover:bg-cockpit-800';
+            } else {
+                btnSpell.className = 'py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer bg-amber text-cockpit-950';
+                btnChoice.className = 'py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer text-slate-300 hover:bg-cockpit-800';
+            }
+            nextQuizQuestion();
+        }
+
+        function nextQuizQuestion() {
+            quizAnswered = false;
+            document.getElementById('quiz-feedback').classList.add('hidden');
+
+            const trickyOnly = document.getElementById('quiz-tricky-only').checked;
+            let pool = trickyOnly ? PHONETIC_DATA.filter(d => d.tricky) : PHONETIC_DATA;
+            // Avoid repeating the exact same character twice in a row
+            let candidate = pool[Math.floor(Math.random() * pool.length)];
+            if (currentQuizItem && pool.length > 1) {
+                while (candidate.char === currentQuizItem.char) {
+                    candidate = pool[Math.floor(Math.random() * pool.length)];
+                }
+            }
+            currentQuizItem = candidate;
+
+            document.getElementById('quiz-target-char').textContent = currentQuizItem.char;
+
+            const choicesContainer = document.getElementById('quiz-choices-container');
+            const spellingForm = document.getElementById('quiz-spelling-form');
+
+            if (quizSubMode === 'choice') {
+                choicesContainer.classList.remove('hidden');
+                spellingForm.classList.add('hidden');
+                document.getElementById('quiz-prompt-label').textContent = 'SELECT MATCHING PHONETIC CODE';
+                document.getElementById('quiz-sub-hint').textContent = '正しいICAOフォネティックコードを選択してください';
+
+                // Generate 3 distractors
+                const distractors = PHONETIC_DATA
+                    .filter(d => d.char !== currentQuizItem.char)
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 3);
+                const options = [currentQuizItem, ...distractors].sort(() => Math.random() - 0.5);
+
+                choicesContainer.innerHTML = '';
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-opt-btn py-4 px-5 rounded-2xl bg-cockpit-800 hover:bg-cockpit-700 border border-cockpit-border font-mono text-lg sm:text-xl font-bold text-white transition flex items-center justify-between cursor-pointer';
+                    btn.innerHTML = `<span>${opt.word}</span><span class="text-xs font-sans text-slate-400">${opt.kana}</span>`;
+                    btn.onclick = () => handleChoiceAnswer(opt.word, btn);
+                    choicesContainer.appendChild(btn);
+                });
+            } else {
+                choicesContainer.classList.add('hidden');
+                spellingForm.classList.remove('hidden');
+                document.getElementById('quiz-prompt-label').textContent = 'EXAM SPELLING TEST (記述式対策)';
+                document.getElementById('quiz-sub-hint').textContent = '正確な英語スペルを入力してください（例: Alfa, Juliett, X-ray）';
+                const input = document.getElementById('spelling-input');
+                input.value = '';
+                input.disabled = false;
+                setTimeout(() => input.focus(), 50);
+            }
+        }
+
+        function speakQuizTarget() {
+            if (currentQuizItem) speakWord(currentQuizItem.word);
+        }
+
+        function handleChoiceAnswer(selectedWord, btnEl) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+            const isCorrect = selectedWord === currentQuizItem.word;
+
+            document.querySelectorAll('.quiz-opt-btn').forEach(b => {
+                b.disabled = true;
+                if (b.textContent.includes(currentQuizItem.word)) {
+                    b.classList.add('border-radar', 'bg-radar/20', 'text-radar');
+                }
+            });
+
+            if (!isCorrect) {
+                btnEl.classList.add('border-hud-red', 'bg-hud-red/20', 'text-hud-red');
+            }
+            finalizeQuizTurn(isCorrect, selectedWord);
+        }
+
+        function submitSpellingQuiz(e) {
+            e.preventDefault();
+            if (quizAnswered) {
+                nextQuizQuestion();
+                return;
+            }
+            const input = document.getElementById('spelling-input');
+            const userVal = input.value.trim();
+            if (!userVal) return;
+
+            quizAnswered = true;
+            input.disabled = true;
+
+            // Case-insensitive exact spelling match (including hyphen in X-ray)
+            const isCorrect = userVal.toLowerCase() === currentQuizItem.word.toLowerCase();
+            finalizeQuizTurn(isCorrect, userVal);
+        }
+
+        function finalizeQuizTurn(isCorrect, userAnswer) {
+            const fbBox = document.getElementById('quiz-feedback');
+            const fbIcon = document.getElementById('quiz-fb-icon');
+            const fbTitle = document.getElementById('quiz-fb-title');
+            const fbDetail = document.getElementById('quiz-fb-detail');
+
+            fbBox.classList.remove('hidden', 'bg-radar/15', 'border-radar', 'bg-hud-red/15', 'border-hud-red');
+
+            if (isCorrect) {
+                playSfx('confirm');
+                speakWord(currentQuizItem.word);
+                quizCombo++;
+                const earned = (quizSubMode === 'spelling' ? 25 : 15) + Math.min(quizCombo * 2, 20);
+                quizSessionScore += earned;
+                addXP(earned);
+
+                // Auto-mark mastered on spelling success
+                if (quizSubMode === 'spelling' && !appState.mastered.includes(currentQuizItem.char)) {
+                    appState.mastered.push(currentQuizItem.char);
+                    saveState();
+                    renderChart();
+                }
+
+                fbBox.classList.add('bg-radar/15', 'border-radar');
+                fbIcon.className = 'fa-solid fa-circle-check text-2xl mt-0.5 text-radar';
+                fbTitle.className = 'font-bold text-base text-radar';
+                fbTitle.textContent = `CLEAR! 正解 (+${earned} XP)`;
+                fbDetail.innerHTML = `<span class="font-mono font-bold text-white">${currentQuizItem.char} = ${currentQuizItem.word}</span>（${currentQuizItem.kana}）<br><span class="text-slate-300">${currentQuizItem.tip}</span>`;
+            } else {
+                playSfx('error');
+                speakWord(currentQuizItem.word);
+                quizCombo = 0;
+
+                fbBox.classList.add('bg-hud-red/15', 'border-hud-red');
+                fbIcon.className = 'fa-solid fa-triangle-exclamation text-2xl mt-0.5 text-hud-red';
+                fbTitle.className = 'font-bold text-base text-hud-red';
+                fbTitle.textContent = `NEGATIVE... 不正解（あなたの回答: ${userAnswer}）`;
+                fbDetail.innerHTML = `正解は <span class="font-mono font-bold text-amber underline">${currentQuizItem.word}</span>（${currentQuizItem.kana}）です。<br><span class="text-slate-200">${currentQuizItem.tip}</span>`;
+            }
+
+            document.getElementById('quiz-combo').textContent = quizCombo;
+            document.getElementById('quiz-score').textContent = quizSessionScore;
+        }
+
+        // 8. MODE 4: RADIO CALLSIGN SIMULATOR
+        let radioSubMode = 'decode'; // 'decode' | 'encode'
+        let currentRadioCallsign = '';
+        let currentRadioSequence = [];
+        let dictationBlind = false;
+        let encodeSelectedWords = [];
+
+        function setRadioMode(mode) {
+            playSfx('click');
+            radioSubMode = mode;
+            const btnDec = document.getElementById('rmode-decode');
+            const btnEnc = document.getElementById('rmode-encode');
+            const panelDec = document.getElementById('radio-decode-panel');
+            const panelEnc = document.getElementById('radio-encode-panel');
+
+            if (mode === 'decode') {
+                btnDec.className = 'px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer bg-radar text-cockpit-950';
+                btnEnc.className = 'px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer text-slate-300 hover:bg-cockpit-800';
+                panelDec.classList.remove('hidden');
+                panelEnc.classList.add('hidden');
+            } else {
+                btnEnc.className = 'px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer bg-amber text-cockpit-950';
+                btnDec.className = 'px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer text-slate-300 hover:bg-cockpit-800';
+                panelEnc.classList.remove('hidden');
+                panelDec.classList.add('hidden');
+            }
+            generateRadioMission();
+        }
+
+        function generateRadioMission() {
+            document.getElementById('radio-feedback').classList.add('hidden');
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const digits = '0123456789';
+            const randL = () => letters[Math.floor(Math.random() * letters.length)];
+            const randD = () => digits[Math.floor(Math.random() * digits.length)];
+
+            // Realistic Japanese Registration (JA + 3 digits + 1 letter, or JA + 2 digits + 2 letters) or Airline Flight
+            const patterns = [
+                () => `JA${randD()}${randD()}${randD()}${randL()}`,
+                () => `JA${randD()}${randD()}${randL()}${randL()}`,
+                () => `JAL${randD()}${randD()}${randD()}`,
+                () => `ANA${randD()}${randD()}${randD()}`,
+                () => `SKY${randD()}${randD()}${randD()}`
+            ];
+            currentRadioCallsign = patterns[Math.floor(Math.random() * patterns.length)]();
+
+            currentRadioSequence = currentRadioCallsign.split('').map(ch => {
+                return PHONETIC_DATA.find(d => d.char === ch);
+            });
+
+            // Setup Decode UI
+            const textDisp = document.getElementById('radio-phonetic-display');
+            textDisp.textContent = `"${currentRadioSequence.map(item => item.word).join(' - ')}"`;
+            if (dictationBlind) {
+                textDisp.classList.add('blur-md', 'select-none');
+            } else {
+                textDisp.classList.remove('blur-md', 'select-none');
+            }
+            document.getElementById('radio-decode-input').value = '';
+
+            // Setup Encode UI
+            document.getElementById('radio-encode-target').textContent = currentRadioCallsign;
+            encodeSelectedWords = [];
+            renderEncodeUI();
+        }
+
+        function toggleDictationBlind() {
+            dictationBlind = !dictationBlind;
+            const textDisp = document.getElementById('radio-phonetic-display');
+            const btn = document.getElementById('blind-toggle-btn');
+            if (dictationBlind) {
+                textDisp.classList.add('blur-md', 'select-none');
+                btn.innerHTML = '<i class="fa-solid fa-eye text-amber"></i> <span class="text-amber">文字を表示する</span>';
+                playRadioTransmission(0.85);
+            } else {
+                textDisp.classList.remove('blur-md', 'select-none');
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> <span>文字を隠して聞き取り練習（ディクテーション）</span>';
+            }
+        }
+
+        function playRadioTransmission(rate = 0.85) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const phrase = currentRadioSequence.map(item => {
+                if (item.word === 'Alfa') return 'Alpha';
+                if (item.word === 'Juliett') return 'Juliet';
+                return item.word;
+            }).join(', ');
+            const utter = new SpeechSynthesisUtterance(phrase);
+            utter.lang = 'en-US';
+            utter.rate = rate;
+            window.speechSynthesis.speak(utter);
+        }
+
+        function checkRadioDecode(e) {
+            e.preventDefault();
+            const val = document.getElementById('radio-decode-input').value.trim().toUpperCase().replace(/\s+/g, '');
+            if (!val) return;
+
+            const fb = document.getElementById('radio-feedback');
+            fb.classList.remove('hidden', 'bg-radar/15', 'border-radar', 'bg-hud-red/15', 'border-hud-red');
+
+            if (val === currentRadioCallsign) {
+                playSfx('confirm');
+                addXP(30);
+                fb.classList.add('bg-radar/15', 'border-radar');
+                fb.innerHTML = `
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <div class="font-bold text-radar text-base"><i class="fa-solid fa-circle-check mr-1"></i> ROGER! 正確な復唱です (+30 XP)</div>
+                            <div class="text-xs text-slate-300 mt-1 font-mono">CALLSIGN: ${currentRadioCallsign} (${currentRadioSequence.map(s => s.word).join(' ')})</div>
+                        </div>
+                        <button onclick="generateRadioMission()" class="px-4 py-2 rounded-xl bg-radar text-cockpit-950 font-bold text-xs shrink-0 cursor-pointer">次の交信へ</button>
+                    </div>
+                `;
+            } else {
+                playSfx('error');
+                fb.classList.add('bg-hud-red/15', 'border-hud-red');
+                fb.innerHTML = `
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <div class="font-bold text-hud-red text-base"><i class="fa-solid fa-circle-xmark mr-1"></i> SAY AGAIN（再送要求）</div>
+                            <div class="text-xs text-slate-300 mt-1">あなたの入力: <span class="font-mono text-white">${val}</span> ／ 正解: <span class="font-mono text-amber font-bold">${currentRadioCallsign}</span></div>
+                        </div>
+                        <button onclick="playRadioTransmission(0.75)" class="px-3 py-2 rounded-xl bg-cockpit-800 text-white font-bold text-xs shrink-0 border border-cockpit-border cursor-pointer">もう一度聞く</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderEncodeUI() {
+            const slotsEl = document.getElementById('encode-slots');
+            const poolEl = document.getElementById('encode-word-pool');
+
+            if (encodeSelectedWords.length === 0) {
+                slotsEl.innerHTML = '<span class="text-xs text-slate-500 font-mono">ここに選択したフォネティックコードが入ります...</span>';
+            } else {
+                slotsEl.innerHTML = encodeSelectedWords.map((w, idx) => `
+                    <button onclick="removeEncodeWord(${idx})" class="px-3 py-1.5 rounded-xl bg-amber/20 border border-amber text-amber font-mono font-bold text-sm flex items-center gap-1.5 hover:bg-amber/30 transition cursor-pointer">
+                        <span>${w}</span>
+                        <i class="fa-solid fa-xmark text-[10px]"></i>
+                    </button>
+                `).join('');
+            }
+
+            // Build pool: required words + 6 distractors, sorted alphabetically for clean cockpit feel
+            const requiredWords = currentRadioSequence.map(s => s.word);
+            const extraWords = PHONETIC_DATA
+                .filter(d => !requiredWords.includes(d.word))
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 6)
+                .map(d => d.word);
+
+            const uniquePool = Array.from(new Set([...requiredWords, ...extraWords])).sort();
+            poolEl.innerHTML = uniquePool.map(word => `
+                <button onclick="addEncodeWord('${word}')" class="px-3.5 py-2.5 rounded-xl bg-cockpit-800 hover:bg-cockpit-700 border border-cockpit-border text-white font-mono text-xs sm:text-sm font-bold transition active:scale-95 cursor-pointer">
+                    ${word}
+                </button>
+            `).join('');
+        }
+
+        function addEncodeWord(word) {
+            playSfx('click');
+            speakWord(word, 1.05);
+            if (encodeSelectedWords.length < 8) {
+                encodeSelectedWords.push(word);
+                renderEncodeUI();
+            }
+        }
+
+        function removeEncodeWord(index) {
+            playSfx('click');
+            encodeSelectedWords.splice(index, 1);
+            renderEncodeUI();
+        }
+
+        function clearEncodeSlots() {
+            playSfx('click');
+            encodeSelectedWords = [];
+            renderEncodeUI();
+        }
+
+        function checkRadioEncode() {
+            const expected = currentRadioSequence.map(s => s.word);
+            const isMatch = encodeSelectedWords.length === expected.length &&
+                encodeSelectedWords.every((val, idx) => val === expected[idx]);
+
+            const fb = document.getElementById('radio-feedback');
+            fb.classList.remove('hidden', 'bg-radar/15', 'border-radar', 'bg-hud-red/15', 'border-hud-red');
+
+            if (isMatch) {
+                playSfx('confirm');
+                addXP(30);
+                fb.classList.add('bg-radar/15', 'border-radar');
+                fb.innerHTML = `
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <div class="font-bold text-radar text-base"><i class="fa-solid fa-tower-broadcast mr-1"></i> GOOD TRANSMISSION! 送信成功 (+30 XP)</div>
+                            <div class="text-xs text-slate-300 mt-1 font-mono">${expected.join(' - ')}</div>
+                        </div>
+                        <button onclick="generateRadioMission()" class="px-4 py-2 rounded-xl bg-radar text-cockpit-950 font-bold text-xs shrink-0 cursor-pointer">次の機体へ</button>
+                    </div>
+                `;
+            } else {
+                playSfx('error');
+                fb.classList.add('bg-hud-red/15', 'border-hud-red');
+                fb.innerHTML = `
+                    <div>
+                        <div class="font-bold text-hud-red text-base"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 送信内容に誤りがあります</div>
+                        <div class="text-xs text-slate-300 mt-1">正解の並び: <span class="font-mono text-amber font-bold">${expected.join(' - ')}</span></div>
+                    </div>
+                `;
+            }
+        }
+
+        // 9. INITIALIZATION ON WINDOW LOAD
+        window.onload = function () {
+            loadState();
+            renderChart();
+            switchTab('chart');
+        };
+    </script>
+</body>
+</html>
